@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Árvore Completa — Todas as Variáveis (max_depth=5 para visualização)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;}
+#header{background:#1a365d;color:white;padding:14px 20px;font-size:16px;font-weight:bold;}
+#legend{background:white;padding:8px 20px;font-size:12px;border-bottom:1px solid #ddd;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:6px;}
+.leg-box{width:16px;height:16px;border-radius:3px;border:1px solid #aaa;flex-shrink:0;}
+#controls{background:white;padding:8px 20px;font-size:12px;border-bottom:1px solid #ddd;display:flex;gap:12px;align-items:center;}
+button{padding:5px 12px;border:1px solid #aaa;border-radius:4px;cursor:pointer;background:#f7f7f7;font-size:12px;}
+button:hover{background:#e0e0e0;}
+#svg-container{width:100%;overflow:auto;background:#f8fafc;}
+svg{display:block;cursor:grab;}
+svg:active{cursor:grabbing;}
+.link{fill:none;stroke:#bbb;stroke-width:2px;}
+.link-label{font-size:11px;font-style:italic;font-weight:bold;}
+.node rect{stroke:#555;stroke-width:1.5px;cursor:pointer;}
+.node rect:hover{stroke:#1a365d;stroke-width:3px;}
+.node text{pointer-events:none;}
+.node-folha > rect:first-child{stroke-dasharray:6,3;stroke-width:2px;}
+</style>
+</head>
+<body>
+<div id="header">Árvore Completa — Todas as Variáveis (max_depth=5 para visualização)</div>
+<div id="legend">
+  <b>Cor (impureza Gini):</b>
+  <div class="leg-item"><div class="leg-box" style="background:#08306b"></div>Gini&asymp;0 (puro)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#4292c6"></div>Gini&asymp;0.25</div>
+  <div class="leg-item"><div class="leg-box" style="background:#c6dbef"></div>Gini&asymp;0.5 (m&aacute;x)</div>
+  <div class="leg-item"><div class="leg-box" style="background:white;border:2px dashed #555;"></div>N&oacute; folha</div>
+  <span style="color:#888;margin-left:8px;">&#128161; Clique em qualquer n&oacute; para colapsar/expandir</span>
+</div>
+<div id="controls">
+  <button onclick="expandAll()">&#9660; Expandir tudo</button>
+  <button onclick="collapseAll()">&#9650; Colapsar tudo</button>
+  <button onclick="resetZoom()">&#8635; Resetar zoom</button>
+  <span style="color:#888;font-size:11px;">Scroll = zoom &nbsp;|&nbsp; Arrastar = mover</span>
+</div>
+<div id="svg-container"></div>
+<script>
+const DATA = {"id": 0, "regra": "Percent_Days_Employed ≤ 0.476", "n": 18084, "n_pos": 10433, "n_neg": 7651, "pct": 57.7, "gini": 0.4882, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 1, "regra": "Age_at_Release ≤ 5.5", "n": 8849, "n_pos": 6260, "n_neg": 2589, "pct": 70.7, "gini": 0.414, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 2, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 7594, "n_pos": 5622, "n_neg": 1972, "pct": 74.0, "gini": 0.3845, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 3, "regra": "Age_at_Release ≤ 1.5", "n": 1382, "n_pos": 814, "n_neg": 568, "pct": 58.9, "gini": 0.4842, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 4, "regra": "Gang_Affiliated ≤ 0.5", "n": 796, "n_pos": 553, "n_neg": 243, "pct": 69.5, "gini": 0.4242, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 5, "regra": "Folha", "n": 540, "n_pos": 341, "n_neg": 199, "pct": 63.1, "gini": 0.4654, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 6, "regra": "Folha", "n": 256, "n_pos": 212, "n_neg": 44, "pct": 82.8, "gini": 0.2847, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 7, "regra": "Percent_Days_Employed ≤ 0.006", "n": 586, "n_pos": 261, "n_neg": 325, "pct": 44.5, "gini": 0.494, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 8, "regra": "Folha", "n": 351, "n_pos": 128, "n_neg": 223, "pct": 36.5, "gini": 0.4634, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 9, "regra": "Folha", "n": 235, "n_pos": 133, "n_neg": 102, "pct": 56.6, "gini": 0.4913, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 10, "regra": "Gang_Affiliated ≤ 0.5", "n": 6212, "n_pos": 4808, "n_neg": 1404, "pct": 77.4, "gini": 0.3499, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 11, "regra": "Delinquency_Reports ≤ 2.5", "n": 4878, "n_pos": 3638, "n_neg": 1240, "pct": 74.6, "gini": 0.3792, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 12, "regra": "Folha", "n": 3676, "n_pos": 2855, "n_neg": 821, "pct": 77.7, "gini": 0.3469, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 13, "regra": "Folha", "n": 1202, "n_pos": 783, "n_neg": 419, "pct": 65.1, "gini": 0.4541, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 14, "regra": "Delinquency_Reports ≤ 3.5", "n": 1334, "n_pos": 1170, "n_neg": 164, "pct": 87.7, "gini": 0.2156, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 15, "regra": "Folha", "n": 1012, "n_pos": 917, "n_neg": 95, "pct": 90.6, "gini": 0.1701, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 16, "regra": "Folha", "n": 322, "n_pos": 253, "n_neg": 69, "pct": 78.6, "gini": 0.3367, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 17, "regra": "Prior_Arrest_Episodes_Property ≤ 2.5", "n": 1255, "n_pos": 638, "n_neg": 617, "pct": 50.8, "gini": 0.4999, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 18, "regra": "Percent_Days_Employed ≤ 0.004", "n": 478, "n_pos": 152, "n_neg": 326, "pct": 31.8, "gini": 0.4337, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 19, "regra": "Prior_Arrest_Episodes_Misd ≤ 5.5", "n": 361, "n_pos": 88, "n_neg": 273, "pct": 24.4, "gini": 0.3687, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 20, "regra": "Folha", "n": 294, "n_pos": 57, "n_neg": 237, "pct": 19.4, "gini": 0.3126, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 21, "regra": "Folha", "n": 67, "n_pos": 31, "n_neg": 36, "pct": 46.3, "gini": 0.4972, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 22, "regra": "Prior_Arrest_Episodes_Felony ≤ 4.5", "n": 117, "n_pos": 64, "n_neg": 53, "pct": 54.7, "gini": 0.4956, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 23, "regra": "Folha", "n": 61, "n_pos": 21, "n_neg": 40, "pct": 34.4, "gini": 0.4515, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 24, "regra": "Folha", "n": 56, "n_pos": 43, "n_neg": 13, "pct": 76.8, "gini": 0.3565, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 25, "regra": "Percent_Days_Employed ≤ 0.002", "n": 777, "n_pos": 486, "n_neg": 291, "pct": 62.5, "gini": 0.4685, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 26, "regra": "Jobs_Per_Year ≤ 0.16", "n": 576, "n_pos": 336, "n_neg": 240, "pct": 58.3, "gini": 0.4861, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 27, "regra": "Folha", "n": 551, "n_pos": 334, "n_neg": 217, "pct": 60.6, "gini": 0.4775, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 28, "regra": "Folha", "n": 25, "n_pos": 2, "n_neg": 23, "pct": 8.0, "gini": 0.1472, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 29, "regra": "Delinquency_Reports ≤ 1.5", "n": 201, "n_pos": 150, "n_neg": 51, "pct": 74.6, "gini": 0.3787, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 30, "regra": "Folha", "n": 161, "n_pos": 129, "n_neg": 32, "pct": 80.1, "gini": 0.3185, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 31, "regra": "Folha", "n": 40, "n_pos": 21, "n_neg": 19, "pct": 52.5, "gini": 0.4988, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 32, "regra": "Jobs_Per_Year ≤ 0.66", "n": 9235, "n_pos": 4173, "n_neg": 5062, "pct": 45.2, "gini": 0.4954, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 33, "regra": "Percent_Days_Employed ≤ 0.478", "n": 2405, "n_pos": 534, "n_neg": 1871, "pct": 22.2, "gini": 0.3455, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 34, "regra": "Folha", "n": 332, "n_pos": 0, "n_neg": 332, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 35, "regra": "Percent_Days_Employed ≤ 0.649", "n": 2073, "n_pos": 534, "n_neg": 1539, "pct": 25.8, "gini": 0.3825, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 36, "regra": "Jobs_Per_Year ≤ 0.217", "n": 324, "n_pos": 183, "n_neg": 141, "pct": 56.5, "gini": 0.4916, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 37, "regra": "Folha", "n": 20, "n_pos": 1, "n_neg": 19, "pct": 5.0, "gini": 0.095, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 38, "regra": "Folha", "n": 304, "n_pos": 182, "n_neg": 122, "pct": 59.9, "gini": 0.4805, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 39, "regra": "Jobs_Per_Year ≤ 0.326", "n": 1749, "n_pos": 351, "n_neg": 1398, "pct": 20.1, "gini": 0.3208, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 40, "regra": "Folha", "n": 446, "n_pos": 12, "n_neg": 434, "pct": 2.7, "gini": 0.0524, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 41, "regra": "Folha", "n": 1303, "n_pos": 339, "n_neg": 964, "pct": 26.0, "gini": 0.385, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 42, "regra": "Gang_Affiliated ≤ 0.5", "n": 6830, "n_pos": 3639, "n_neg": 3191, "pct": 53.3, "gini": 0.4978, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 43, "regra": "Prior_Arrest_Episodes_Misd ≤ 2.5", "n": 5911, "n_pos": 2939, "n_neg": 2972, "pct": 49.7, "gini": 0.5, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 44, "regra": "Supervision_Risk_Score_First ≤ 4.5", "n": 2401, "n_pos": 924, "n_neg": 1477, "pct": 38.5, "gini": 0.4735, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 45, "regra": "Folha", "n": 607, "n_pos": 142, "n_neg": 465, "pct": 23.4, "gini": 0.3584, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 46, "regra": "Folha", "n": 1794, "n_pos": 782, "n_neg": 1012, "pct": 43.6, "gini": 0.4918, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 47, "regra": "Percent_Days_Employed ≤ 0.907", "n": 3510, "n_pos": 2015, "n_neg": 1495, "pct": 57.4, "gini": 0.489, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 48, "regra": "Folha", "n": 1173, "n_pos": 778, "n_neg": 395, "pct": 66.3, "gini": 0.4467, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 49, "regra": "Folha", "n": 2337, "n_pos": 1237, "n_neg": 1100, "pct": 52.9, "gini": 0.4983, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 50, "regra": "Jobs_Per_Year ≤ 0.906", "n": 919, "n_pos": 700, "n_neg": 219, "pct": 76.2, "gini": 0.363, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 51, "regra": "Percent_Days_Employed ≤ 0.684", "n": 120, "n_pos": 69, "n_neg": 51, "pct": 57.5, "gini": 0.4888, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 52, "regra": "Folha", "n": 27, "n_pos": 23, "n_neg": 4, "pct": 85.2, "gini": 0.2524, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 53, "regra": "Folha", "n": 93, "n_pos": 46, "n_neg": 47, "pct": 49.5, "gini": 0.4999, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 54, "regra": "Jobs_Per_Year ≤ 1.007", "n": 799, "n_pos": 631, "n_neg": 168, "pct": 79.0, "gini": 0.3321, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 55, "regra": "Folha", "n": 359, "n_pos": 315, "n_neg": 44, "pct": 87.7, "gini": 0.2151, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 56, "regra": "Folha", "n": 440, "n_pos": 316, "n_neg": 124, "pct": 71.8, "gini": 0.4048, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}]};
+const NODE_W=210, NODE_H=95, H_GAP=28, V_GAP=55;
+ 
+function giniCor(g){
+  const t=Math.min(g/0.5,1);
+  return `rgb(${Math.round(8+(198-8)*t)},${Math.round(48+(219-48)*t)},${Math.round(107+(239-107)*t)})`;
+}
+function darken(g){
+  const t=Math.min(g/0.5,1);
+  return `rgb(${Math.max(0,Math.round(8+(198-8)*t)-30)},${Math.max(0,Math.round(48+(219-48)*t)-30)},${Math.max(0,Math.round(107+(239-107)*t)-30)})`;
+}
+function textCor(g){ return g<0.32?'white':'#111'; }
+ 
+const collapsed=new Set();
+ 
+function cloneTree(d){
+  const n={...d};
+  if(d.children&&!collapsed.has(d.id)){
+    n.children=d.children.map(cloneTree);
+  }else{
+    n._kids=d.children||d._kids||null;
+    n.children=null;
+  }
+  return n;
+}
+ 
+const svg=d3.select('#svg-container').append('svg');
+const g=svg.append('g');
+const zoom=d3.zoom().scaleExtent([0.08,3]).on('zoom',e=>g.attr('transform',e.transform));
+svg.call(zoom);
+function resetZoom(){svg.transition().duration(400).call(zoom.transform,d3.zoomIdentity.translate(60,40));}
+ 
+function render(){
+  g.selectAll('*').remove();
+  const root=d3.hierarchy(cloneTree(DATA),d=>d.children);
+  d3.tree().nodeSize([NODE_W+H_GAP, NODE_H+V_GAP])(root);
+ 
+  const descs=root.descendants();
+  const xs=descs.map(d=>d.x), ys=descs.map(d=>d.y);
+  const minX=Math.min(...xs)-NODE_W/2-30, maxX=Math.max(...xs)+NODE_W/2+30;
+  const minY=Math.min(...ys)-30, maxY=Math.max(...ys)+NODE_H+30;
+  svg.attr('width',maxX-minX+20).attr('height',maxY-minY+20);
+  const ox=-minX+10, oy=-minY+10;
+ 
+  g.selectAll('.link').data(root.links()).join('path').attr('class','link')
+    .attr('d',d=>{
+      const sx=d.source.x+ox, sy=d.source.y+NODE_H+oy;
+      const tx=d.target.x+ox, ty=d.target.y+oy;
+      const my=(sy+ty)/2;
+      return `M${sx},${sy} C${sx},${my} ${tx},${my} ${tx},${ty}`;
+    });
+ 
+  g.selectAll('.link-label').data(root.links()).join('text').attr('class','link-label')
+    .attr('x',d=>(d.source.x+d.target.x)/2+ox+(d.target.data.lado==='sim'?-18:18))
+    .attr('y',d=>(d.source.y+NODE_H+d.target.y)/2+oy)
+    .attr('text-anchor','middle')
+    .attr('fill',d=>d.target.data.lado==='sim'?'#276749':'#c53030')
+    .text(d=>d.target.data.lado==='sim'?'Sim':'Não');
+ 
+  const nodes=g.selectAll('.node').data(descs).join('g')
+    .attr('class',d=>'node'+(d.data.folha?' node-folha':''))
+    .attr('transform',d=>`translate(${d.x+ox-NODE_W/2},${d.y+oy})`);
+ 
+  nodes.append('rect')
+    .attr('width',NODE_W).attr('height',NODE_H).attr('rx',8).attr('ry',8)
+    .attr('fill',d=>giniCor(d.data.gini))
+    .on('click',(ev,d)=>{
+      if(d.data.folha)return;
+      collapsed.has(d.data.id)?collapsed.delete(d.data.id):collapsed.add(d.data.id);
+      render();
+    });
+ 
+  nodes.filter(d=>!d.data.folha).append('rect')
+    .attr('width',NODE_W).attr('height',26).attr('rx',8).attr('ry',8)
+    .attr('fill',d=>darken(d.data.gini)).style('pointer-events','none');
+ 
+  nodes.append('line')
+    .attr('x1',0).attr('x2',NODE_W).attr('y1',26).attr('y2',26)
+    .attr('stroke','rgba(255,255,255,0.25)').attr('stroke-width',1)
+    .style('pointer-events','none');
+ 
+  nodes.append('text')
+    .attr('x',NODE_W/2).attr('y',17).attr('text-anchor','middle')
+    .attr('font-size',11).attr('font-weight','bold')
+    .attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
+    .text(d=>d.data.regra.length>30?d.data.regra.slice(0,29)+'…':d.data.regra)
+    .append('title').text(d=>d.data.regra);
+ 
+  nodes.append('text')
+    .attr('x',NODE_W/2).attr('y',48).attr('text-anchor','middle')
+    .attr('font-size',14).attr('font-weight','bold')
+    .attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
+    .text(d=>`% Reincidência: ${d.data.pct}%`);
+ 
+  nodes.append('text')
+    .attr('x',NODE_W/2).attr('y',65).attr('text-anchor','middle')
+    .attr('font-size',10).attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
+    .text(d=>`n = ${d.data.n.toLocaleString('pt-BR')}   Gini = ${d.data.gini}`);
+ 
+  nodes.filter(d=>d.data.folha).append('text')
+    .attr('x',NODE_W/2).attr('y',82).attr('text-anchor','middle')
+    .attr('font-size',11).attr('font-weight','bold')
+    .attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
+    .text(d=>'→ '+d.data.pred);
+ 
+  nodes.filter(d=>!d.data.folha).append('text')
+    .attr('x',NODE_W/2).attr('y',82).attr('text-anchor','middle')
+    .attr('font-size',10).attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
+    .text(d=>collapsed.has(d.data.id)?'▼ expandir (clique)':'▲ colapsar (clique)');
+}
+ 
+function expandAll(){collapsed.clear();render();}
+function collapseAll(){
+  function col(d){if(d.children){collapsed.add(d.id);d.children.forEach(col);}}
+  if(DATA.children)DATA.children.forEach(col);
+  render();
+}
+render();
+resetZoom();
+</script>
+</body>
+</html>
