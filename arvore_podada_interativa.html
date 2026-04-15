@@ -2,63 +2,75 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Árvore Podada — Variáveis Selecionadas (max_depth=7)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árvore Podada — Variáveis Selecionadas (max_depth=3)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
-body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;}
-#header{background:#1a365d;color:white;padding:14px 20px;font-size:16px;font-weight:bold;}
-#legend{background:white;padding:8px 20px;font-size:12px;border-bottom:1px solid #ddd;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
-.leg-item{display:flex;align-items:center;gap:6px;}
-.leg-box{width:16px;height:16px;border-radius:3px;border:1px solid #aaa;flex-shrink:0;}
-#controls{background:white;padding:8px 20px;font-size:12px;border-bottom:1px solid #ddd;display:flex;gap:12px;align-items:center;}
-button{padding:5px 12px;border:1px solid #aaa;border-radius:4px;cursor:pointer;background:#f7f7f7;font-size:12px;}
-button:hover{background:#e0e0e0;}
-#svg-container{width:100%;overflow:auto;background:#f8fafc;}
-svg{display:block;cursor:grab;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;background:#fafafa;}
+.app{display:flex;flex-direction:column;width:100vw;height:100vh;}
+#header{background:#333;color:white;padding:10px 20px;font-size:15px;font-weight:bold;
+        display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+#legend{background:#f5f5f5;padding:6px 20px;font-size:11px;border-bottom:1px solid #ddd;
+        display:flex;gap:16px;align-items:center;flex-wrap:wrap;flex-shrink:0;}
+.leg-item{display:flex;align-items:center;gap:5px;}
+.leg-box{width:14px;height:14px;border-radius:2px;border:1px solid #999;flex-shrink:0;}
+#controls{background:#f5f5f5;padding:6px 20px;font-size:12px;border-bottom:1px solid #ddd;
+          display:flex;gap:10px;align-items:center;flex-shrink:0;}
+button{padding:4px 10px;border:1px solid #aaa;border-radius:3px;cursor:pointer;
+       background:#eee;font-size:11px;}
+button:hover{background:#ddd;}
+#tree-container{flex:1;width:100%;overflow:hidden;position:relative;}
+svg{width:100%;height:100%;display:block;cursor:grab;}
 svg:active{cursor:grabbing;}
-.link{fill:none;stroke:#bbb;stroke-width:2px;}
-.link-label{font-size:11px;font-style:italic;font-weight:bold;}
-.node rect{stroke:#555;stroke-width:1.5px;cursor:pointer;}
-.node rect:hover{stroke:#1a365d;stroke-width:3px;}
+.link{fill:none;stroke:#bbb;stroke-width:1.8px;}
+.link-label{font-size:10px;font-style:italic;font-weight:bold;}
+.node rect{cursor:pointer;transition:stroke-width 0.15s;}
+.node rect:hover{stroke-width:3px;stroke:#333;}
 .node text{pointer-events:none;}
-.node-folha > rect:first-child{stroke-dasharray:6,3;stroke-width:2px;}
+.node-folha>rect:first-child{stroke-dasharray:5,3;}
+.node-collapsed>rect:first-child{stroke:#555;stroke-width:2.5px;}
 </style>
 </head>
 <body>
-<div id="header">Árvore Podada — Variáveis Selecionadas (max_depth=7)</div>
+<div class="app">
+<div id="header"><span>Árvore Podada — Variáveis Selecionadas (max_depth=3)</span><span style="font-size:11px;font-weight:normal;color:#ccc;">Escala de cinza | Clique nos nós para expandir/colapsar</span></div>
 <div id="legend">
-  <b>Cor (impureza Gini):</b>
-  <div class="leg-item"><div class="leg-box" style="background:#08306b"></div>Gini&asymp;0 (puro)</div>
-  <div class="leg-item"><div class="leg-box" style="background:#4292c6"></div>Gini&asymp;0.25</div>
-  <div class="leg-item"><div class="leg-box" style="background:#c6dbef"></div>Gini&asymp;0.5 (m&aacute;x)</div>
-  <div class="leg-item"><div class="leg-box" style="background:white;border:2px dashed #555;"></div>N&oacute; folha</div>
-  <span style="color:#888;margin-left:8px;">&#128161; Clique em qualquer n&oacute; para colapsar/expandir</span>
+  <div class="leg-item"><div class="leg-box" style="background:#444"></div>Gini&asymp;0 (puro)</div>
+  <div class="leg-item"><div class="leg-box" style="background:#999"></div>Gini&asymp;0.25</div>
+  <div class="leg-item"><div class="leg-box" style="background:#ddd"></div>Gini&asymp;0.5 (m&aacute;x)</div>
+  <div class="leg-item"><div class="leg-box" style="background:white;border:2px dashed #666;"></div>Folha</div>
+  <div class="leg-item"><div class="leg-box" style="background:#eee;border:2.5px solid #555;"></div>Colapsado</div>
 </div>
 <div id="controls">
   <button onclick="expandAll()">&#9660; Expandir tudo</button>
   <button onclick="collapseAll()">&#9650; Colapsar tudo</button>
   <button onclick="resetZoom()">&#8635; Resetar zoom</button>
-  <span style="color:#888;font-size:11px;">Scroll = zoom &nbsp;|&nbsp; Arrastar = mover</span>
+  <button onclick="fitToScreen()">&#8862; Ajustar &agrave; tela</button>
+  <span style="color:#888;font-size:10px;">Scroll=zoom | Arraste=mover | Clique=expandir/colapsar</span>
 </div>
-<div id="svg-container"></div>
+<div id="tree-container"></div>
+</div>
 <script>
-const DATA = {"id": 0, "regra": "Percent_Days_Employed ≤ 0.476", "n": 18084, "n_pos": 10433, "n_neg": 7651, "pct": 57.7, "gini": 0.4882, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 1, "regra": "Age_at_Release ≤ 5.5", "n": 8849, "n_pos": 6260, "n_neg": 2589, "pct": 70.7, "gini": 0.414, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 2, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 7594, "n_pos": 5622, "n_neg": 1972, "pct": 74.0, "gini": 0.3845, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 3, "regra": "Age_at_Release ≤ 1.5", "n": 1382, "n_pos": 814, "n_neg": 568, "pct": 58.9, "gini": 0.4842, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 4, "regra": "Avg_Days_per_DrugTest ≤ 110.273", "n": 796, "n_pos": 553, "n_neg": 243, "pct": 69.5, "gini": 0.4242, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 5, "regra": "Prior_Arrest_Episodes_Felony ≤ 1.5", "n": 634, "n_pos": 415, "n_neg": 219, "pct": 65.5, "gini": 0.4522, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 6, "regra": "Avg_Days_per_DrugTest ≤ 10.902", "n": 256, "n_pos": 149, "n_neg": 107, "pct": 58.2, "gini": 0.4865, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 7, "regra": "Folha", "n": 9, "n_pos": 9, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 8, "regra": "Folha", "n": 247, "n_pos": 140, "n_neg": 107, "pct": 56.7, "gini": 0.4911, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 9, "regra": "Avg_Days_per_DrugTest ≤ 102.75", "n": 378, "n_pos": 266, "n_neg": 112, "pct": 70.4, "gini": 0.417, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 10, "regra": "Folha", "n": 371, "n_pos": 264, "n_neg": 107, "pct": 71.2, "gini": 0.4105, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 11, "regra": "Folha", "n": 7, "n_pos": 2, "n_neg": 5, "pct": 28.6, "gini": 0.4082, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 12, "regra": "Percent_Days_Employed ≤ 0.298", "n": 162, "n_pos": 138, "n_neg": 24, "pct": 85.2, "gini": 0.2524, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 13, "regra": "Avg_Days_per_DrugTest ≤ 329.75", "n": 134, "n_pos": 119, "n_neg": 15, "pct": 88.8, "gini": 0.1988, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 14, "regra": "Folha", "n": 109, "n_pos": 94, "n_neg": 15, "pct": 86.2, "gini": 0.2374, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 15, "regra": "Folha", "n": 25, "n_pos": 25, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 16, "regra": "Percent_Days_Employed ≤ 0.309", "n": 28, "n_pos": 19, "n_neg": 9, "pct": 67.9, "gini": 0.4362, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 17, "regra": "Folha", "n": 3, "n_pos": 0, "n_neg": 3, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 18, "regra": "Folha", "n": 25, "n_pos": 19, "n_neg": 6, "pct": 76.0, "gini": 0.3648, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 19, "regra": "Percent_Days_Employed ≤ 0.006", "n": 586, "n_pos": 261, "n_neg": 325, "pct": 44.5, "gini": 0.494, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 20, "regra": "Jobs_Per_Year ≤ 0.318", "n": 351, "n_pos": 128, "n_neg": 223, "pct": 36.5, "gini": 0.4634, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 21, "regra": "Age_at_Release ≤ 3.5", "n": 300, "n_pos": 127, "n_neg": 173, "pct": 42.3, "gini": 0.4882, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 22, "regra": "Folha", "n": 207, "n_pos": 100, "n_neg": 107, "pct": 48.3, "gini": 0.4994, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 23, "regra": "Folha", "n": 93, "n_pos": 27, "n_neg": 66, "pct": 29.0, "gini": 0.4121, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 24, "regra": "Jobs_Per_Year ≤ 0.995", "n": 51, "n_pos": 1, "n_neg": 50, "pct": 2.0, "gini": 0.0384, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 25, "regra": "Folha", "n": 50, "n_pos": 0, "n_neg": 50, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 26, "regra": "Folha", "n": 1, "n_pos": 1, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 27, "regra": "Avg_Days_per_DrugTest ≤ 123.727", "n": 235, "n_pos": 133, "n_neg": 102, "pct": 56.6, "gini": 0.4913, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 28, "regra": "Jobs_Per_Year ≤ 0.27", "n": 165, "n_pos": 81, "n_neg": 84, "pct": 49.1, "gini": 0.4998, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 29, "regra": "Folha", "n": 19, "n_pos": 14, "n_neg": 5, "pct": 73.7, "gini": 0.3878, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 30, "regra": "Folha", "n": 146, "n_pos": 67, "n_neg": 79, "pct": 45.9, "gini": 0.4966, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 31, "regra": "Percent_Days_Employed ≤ 0.281", "n": 70, "n_pos": 52, "n_neg": 18, "pct": 74.3, "gini": 0.382, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 32, "regra": "Folha", "n": 45, "n_pos": 39, "n_neg": 6, "pct": 86.7, "gini": 0.2311, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 33, "regra": "Folha", "n": 25, "n_pos": 13, "n_neg": 12, "pct": 52.0, "gini": 0.4992, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 34, "regra": "Age_at_Release ≤ 2.5", "n": 6212, "n_pos": 4808, "n_neg": 1404, "pct": 77.4, "gini": 0.3499, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 35, "regra": "Jobs_Per_Year ≤ 0.639", "n": 3453, "n_pos": 2799, "n_neg": 654, "pct": 81.1, "gini": 0.3071, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 36, "regra": "Jobs_Per_Year ≤ 0.634", "n": 2690, "n_pos": 2129, "n_neg": 561, "pct": 79.1, "gini": 0.3301, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 37, "regra": "Percent_Days_Employed ≤ 0.417", "n": 2655, "n_pos": 2126, "n_neg": 529, "pct": 80.1, "gini": 0.3191, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 38, "regra": "Folha", "n": 2616, "n_pos": 2105, "n_neg": 511, "pct": 80.5, "gini": 0.3144, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 39, "regra": "Folha", "n": 39, "n_pos": 21, "n_neg": 18, "pct": 53.8, "gini": 0.497, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 40, "regra": "Jobs_Per_Year ≤ 0.636", "n": 35, "n_pos": 3, "n_neg": 32, "pct": 8.6, "gini": 0.1567, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 41, "regra": "Folha", "n": 31, "n_pos": 0, "n_neg": 31, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 42, "regra": "Folha", "n": 4, "n_pos": 3, "n_neg": 1, "pct": 75.0, "gini": 0.375, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 43, "regra": "Percent_Days_Employed ≤ 0.316", "n": 763, "n_pos": 670, "n_neg": 93, "pct": 87.8, "gini": 0.2141, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 44, "regra": "Jobs_Per_Year ≤ 1.091", "n": 480, "n_pos": 434, "n_neg": 46, "pct": 90.4, "gini": 0.1733, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 45, "regra": "Folha", "n": 404, "n_pos": 372, "n_neg": 32, "pct": 92.1, "gini": 0.1459, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 46, "regra": "Folha", "n": 76, "n_pos": 62, "n_neg": 14, "pct": 81.6, "gini": 0.3006, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 47, "regra": "Percent_Days_Employed ≤ 0.341", "n": 283, "n_pos": 236, "n_neg": 47, "pct": 83.4, "gini": 0.277, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 48, "regra": "Folha", "n": 49, "n_pos": 35, "n_neg": 14, "pct": 71.4, "gini": 0.4082, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 49, "regra": "Folha", "n": 234, "n_pos": 201, "n_neg": 33, "pct": 85.9, "gini": 0.2423, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 50, "regra": "Prior_Arrest_Episodes_Felony ≤ 8.5", "n": 2759, "n_pos": 2009, "n_neg": 750, "pct": 72.8, "gini": 0.3959, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 51, "regra": "Percent_Days_Employed ≤ 0.026", "n": 1315, "n_pos": 826, "n_neg": 489, "pct": 62.8, "gini": 0.4672, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 52, "regra": "Jobs_Per_Year ≤ 0.622", "n": 828, "n_pos": 479, "n_neg": 349, "pct": 57.9, "gini": 0.4877, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 53, "regra": "Folha", "n": 765, "n_pos": 473, "n_neg": 292, "pct": 61.8, "gini": 0.472, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 54, "regra": "Folha", "n": 63, "n_pos": 6, "n_neg": 57, "pct": 9.5, "gini": 0.1723, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 55, "regra": "Percent_Days_Employed ≤ 0.431", "n": 487, "n_pos": 347, "n_neg": 140, "pct": 71.3, "gini": 0.4097, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 56, "regra": "Folha", "n": 426, "n_pos": 315, "n_neg": 111, "pct": 73.9, "gini": 0.3853, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 57, "regra": "Folha", "n": 61, "n_pos": 32, "n_neg": 29, "pct": 52.5, "gini": 0.4988, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 58, "regra": "Percent_Days_Employed ≤ 0.001", "n": 1444, "n_pos": 1183, "n_neg": 261, "pct": 81.9, "gini": 0.2962, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 59, "regra": "Jobs_Per_Year ≤ 0.151", "n": 958, "n_pos": 761, "n_neg": 197, "pct": 79.4, "gini": 0.3267, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 60, "regra": "Folha", "n": 932, "n_pos": 759, "n_neg": 173, "pct": 81.4, "gini": 0.3023, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 61, "regra": "Folha", "n": 26, "n_pos": 2, "n_neg": 24, "pct": 7.7, "gini": 0.142, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 62, "regra": "Avg_Days_per_DrugTest ≤ 10.11", "n": 486, "n_pos": 422, "n_neg": 64, "pct": 86.8, "gini": 0.2287, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 63, "regra": "Folha", "n": 8, "n_pos": 3, "n_neg": 5, "pct": 37.5, "gini": 0.4688, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 64, "regra": "Folha", "n": 478, "n_pos": 419, "n_neg": 59, "pct": 87.7, "gini": 0.2164, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 65, "regra": "Prior_Arrest_Episodes_Felony ≤ 4.5", "n": 1255, "n_pos": 638, "n_neg": 617, "pct": 50.8, "gini": 0.4999, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 66, "regra": "Jobs_Per_Year ≤ 0.733", "n": 317, "n_pos": 85, "n_neg": 232, "pct": 26.8, "gini": 0.3925, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 67, "regra": "Jobs_Per_Year ≤ 0.569", "n": 290, "n_pos": 70, "n_neg": 220, "pct": 24.1, "gini": 0.3662, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 68, "regra": "Prior_Arrest_Episodes_Felony ≤ 1.5", "n": 240, "n_pos": 70, "n_neg": 170, "pct": 29.2, "gini": 0.4132, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 69, "regra": "Avg_Days_per_DrugTest ≤ 158.379", "n": 64, "n_pos": 11, "n_neg": 53, "pct": 17.2, "gini": 0.2847, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 70, "regra": "Folha", "n": 56, "n_pos": 7, "n_neg": 49, "pct": 12.5, "gini": 0.2188, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 71, "regra": "Folha", "n": 8, "n_pos": 4, "n_neg": 4, "pct": 50.0, "gini": 0.5, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 72, "regra": "Jobs_Per_Year ≤ 0.387", "n": 176, "n_pos": 59, "n_neg": 117, "pct": 33.5, "gini": 0.4457, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 73, "regra": "Folha", "n": 165, "n_pos": 51, "n_neg": 114, "pct": 30.9, "gini": 0.4271, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 74, "regra": "Folha", "n": 11, "n_pos": 8, "n_neg": 3, "pct": 72.7, "gini": 0.3967, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 75, "regra": "Folha", "n": 50, "n_pos": 0, "n_neg": 50, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 76, "regra": "Jobs_Per_Year ≤ 0.999", "n": 27, "n_pos": 15, "n_neg": 12, "pct": 55.6, "gini": 0.4938, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 77, "regra": "Percent_Days_Employed ≤ 0.019", "n": 15, "n_pos": 13, "n_neg": 2, "pct": 86.7, "gini": 0.2311, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 78, "regra": "Jobs_Per_Year ≤ 0.922", "n": 2, "n_pos": 1, "n_neg": 1, "pct": 50.0, "gini": 0.5, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 79, "regra": "Folha", "n": 1, "n_pos": 0, "n_neg": 1, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 80, "regra": "Folha", "n": 1, "n_pos": 1, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 81, "regra": "Jobs_Per_Year ≤ 0.83", "n": 13, "n_pos": 12, "n_neg": 1, "pct": 92.3, "gini": 0.142, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 82, "regra": "Folha", "n": 4, "n_pos": 3, "n_neg": 1, "pct": 75.0, "gini": 0.375, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 83, "regra": "Folha", "n": 9, "n_pos": 9, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 84, "regra": "Percent_Days_Employed ≤ 0.057", "n": 12, "n_pos": 2, "n_neg": 10, "pct": 16.7, "gini": 0.2778, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 85, "regra": "Folha", "n": 1, "n_pos": 1, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 86, "regra": "Jobs_Per_Year ≤ 1.565", "n": 11, "n_pos": 1, "n_neg": 10, "pct": 9.1, "gini": 0.1653, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 87, "regra": "Folha", "n": 10, "n_pos": 0, "n_neg": 10, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 88, "regra": "Folha", "n": 1, "n_pos": 1, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 89, "regra": "Percent_Days_Employed ≤ 0.002", "n": 938, "n_pos": 553, "n_neg": 385, "pct": 59.0, "gini": 0.484, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 90, "regra": "Jobs_Per_Year ≤ 0.117", "n": 691, "n_pos": 367, "n_neg": 324, "pct": 53.1, "gini": 0.4981, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 91, "regra": "Prior_Arrest_Episodes_Felony ≤ 9.5", "n": 648, "n_pos": 364, "n_neg": 284, "pct": 56.2, "gini": 0.4924, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 92, "regra": "Avg_Days_per_DrugTest ≤ 72.55", "n": 195, "n_pos": 87, "n_neg": 108, "pct": 44.6, "gini": 0.4942, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 93, "regra": "Folha", "n": 140, "n_pos": 55, "n_neg": 85, "pct": 39.3, "gini": 0.477, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 94, "regra": "Folha", "n": 55, "n_pos": 32, "n_neg": 23, "pct": 58.2, "gini": 0.4866, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 95, "regra": "Avg_Days_per_DrugTest ≤ 211.286", "n": 453, "n_pos": 277, "n_neg": 176, "pct": 61.1, "gini": 0.4751, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 96, "regra": "Folha", "n": 416, "n_pos": 247, "n_neg": 169, "pct": 59.4, "gini": 0.4824, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 97, "regra": "Folha", "n": 37, "n_pos": 30, "n_neg": 7, "pct": 81.1, "gini": 0.3068, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 98, "regra": "Jobs_Per_Year ≤ 0.74", "n": 43, "n_pos": 3, "n_neg": 40, "pct": 7.0, "gini": 0.1298, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 99, "regra": "Folha", "n": 39, "n_pos": 0, "n_neg": 39, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 100, "regra": "Avg_Days_per_DrugTest ≤ 39.562", "n": 4, "n_pos": 3, "n_neg": 1, "pct": 75.0, "gini": 0.375, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 101, "regra": "Folha", "n": 2, "n_pos": 1, "n_neg": 1, "pct": 50.0, "gini": 0.5, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 102, "regra": "Folha", "n": 2, "n_pos": 2, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 103, "regra": "Avg_Days_per_DrugTest ≤ 32.758", "n": 247, "n_pos": 186, "n_neg": 61, "pct": 75.3, "gini": 0.3719, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 104, "regra": "Percent_Days_Employed ≤ 0.15", "n": 26, "n_pos": 13, "n_neg": 13, "pct": 50.0, "gini": 0.5, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 105, "regra": "Jobs_Per_Year ≤ 1.155", "n": 8, "n_pos": 1, "n_neg": 7, "pct": 12.5, "gini": 0.2188, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 106, "regra": "Folha", "n": 6, "n_pos": 0, "n_neg": 6, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 107, "regra": "Folha", "n": 2, "n_pos": 1, "n_neg": 1, "pct": 50.0, "gini": 0.5, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 108, "regra": "Jobs_Per_Year ≤ 0.689", "n": 18, "n_pos": 12, "n_neg": 6, "pct": 66.7, "gini": 0.4444, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 109, "regra": "Folha", "n": 8, "n_pos": 3, "n_neg": 5, "pct": 37.5, "gini": 0.4688, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 110, "regra": "Folha", "n": 10, "n_pos": 9, "n_neg": 1, "pct": 90.0, "gini": 0.18, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 111, "regra": "Percent_Days_Employed ≤ 0.169", "n": 221, "n_pos": 173, "n_neg": 48, "pct": 78.3, "gini": 0.34, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 112, "regra": "Avg_Days_per_DrugTest ≤ 40.883", "n": 81, "n_pos": 71, "n_neg": 10, "pct": 87.7, "gini": 0.2164, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 113, "regra": "Folha", "n": 2, "n_pos": 0, "n_neg": 2, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 114, "regra": "Folha", "n": 79, "n_pos": 71, "n_neg": 8, "pct": 89.9, "gini": 0.182, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 115, "regra": "Prior_Arrest_Episodes_Felony ≤ 7.5", "n": 140, "n_pos": 102, "n_neg": 38, "pct": 72.9, "gini": 0.3955, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 116, "regra": "Folha", "n": 32, "n_pos": 19, "n_neg": 13, "pct": 59.4, "gini": 0.4824, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 117, "regra": "Folha", "n": 108, "n_pos": 83, "n_neg": 25, "pct": 76.9, "gini": 0.3558, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 118, "regra": "Jobs_Per_Year ≤ 0.66", "n": 9235, "n_pos": 4173, "n_neg": 5062, "pct": 45.2, "gini": 0.4954, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 119, "regra": "Percent_Days_Employed ≤ 0.478", "n": 2405, "n_pos": 534, "n_neg": 1871, "pct": 22.2, "gini": 0.3455, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 120, "regra": "Folha", "n": 332, "n_pos": 0, "n_neg": 332, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 121, "regra": "Percent_Days_Employed ≤ 0.649", "n": 2073, "n_pos": 534, "n_neg": 1539, "pct": 25.8, "gini": 0.3825, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 122, "regra": "Jobs_Per_Year ≤ 0.217", "n": 324, "n_pos": 183, "n_neg": 141, "pct": 56.5, "gini": 0.4916, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 123, "regra": "Percent_Days_Employed ≤ 0.504", "n": 20, "n_pos": 1, "n_neg": 19, "pct": 5.0, "gini": 0.095, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 124, "regra": "Percent_Days_Employed ≤ 0.496", "n": 3, "n_pos": 1, "n_neg": 2, "pct": 33.3, "gini": 0.4444, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 125, "regra": "Folha", "n": 2, "n_pos": 0, "n_neg": 2, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 126, "regra": "Folha", "n": 1, "n_pos": 1, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 127, "regra": "Folha", "n": 17, "n_pos": 0, "n_neg": 17, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 128, "regra": "Avg_Days_per_DrugTest ≤ 32.94", "n": 304, "n_pos": 182, "n_neg": 122, "pct": 59.9, "gini": 0.4805, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 129, "regra": "Avg_Days_per_DrugTest ≤ 28.708", "n": 48, "n_pos": 19, "n_neg": 29, "pct": 39.6, "gini": 0.4783, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 130, "regra": "Folha", "n": 34, "n_pos": 18, "n_neg": 16, "pct": 52.9, "gini": 0.4983, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 131, "regra": "Folha", "n": 14, "n_pos": 1, "n_neg": 13, "pct": 7.1, "gini": 0.1327, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 132, "regra": "Age_at_Release ≤ 1.5", "n": 256, "n_pos": 163, "n_neg": 93, "pct": 63.7, "gini": 0.4626, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 133, "regra": "Folha", "n": 62, "n_pos": 49, "n_neg": 13, "pct": 79.0, "gini": 0.3314, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 134, "regra": "Folha", "n": 194, "n_pos": 114, "n_neg": 80, "pct": 58.8, "gini": 0.4846, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 135, "regra": "Jobs_Per_Year ≤ 0.326", "n": 1749, "n_pos": 351, "n_neg": 1398, "pct": 20.1, "gini": 0.3208, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 136, "regra": "Jobs_Per_Year ≤ 0.31", "n": 446, "n_pos": 12, "n_neg": 434, "pct": 2.7, "gini": 0.0524, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 137, "regra": "Percent_Days_Employed ≤ 0.882", "n": 379, "n_pos": 5, "n_neg": 374, "pct": 1.3, "gini": 0.026, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 138, "regra": "Folha", "n": 169, "n_pos": 5, "n_neg": 164, "pct": 3.0, "gini": 0.0574, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 139, "regra": "Folha", "n": 210, "n_pos": 0, "n_neg": 210, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 140, "regra": "Prior_Arrest_Episodes_Felony ≤ 7.5", "n": 67, "n_pos": 7, "n_neg": 60, "pct": 10.4, "gini": 0.1871, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 141, "regra": "Folha", "n": 47, "n_pos": 1, "n_neg": 46, "pct": 2.1, "gini": 0.0416, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 142, "regra": "Folha", "n": 20, "n_pos": 6, "n_neg": 14, "pct": 30.0, "gini": 0.42, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 143, "regra": "Prior_Arrest_Episodes_Felony ≤ 5.5", "n": 1303, "n_pos": 339, "n_neg": 964, "pct": 26.0, "gini": 0.385, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 144, "regra": "Age_at_Release ≤ 1.5", "n": 740, "n_pos": 146, "n_neg": 594, "pct": 19.7, "gini": 0.3167, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 145, "regra": "Folha", "n": 182, "n_pos": 54, "n_neg": 128, "pct": 29.7, "gini": 0.4173, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 146, "regra": "Folha", "n": 558, "n_pos": 92, "n_neg": 466, "pct": 16.5, "gini": 0.2754, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 147, "regra": "Percent_Days_Employed ≤ 0.953", "n": 563, "n_pos": 193, "n_neg": 370, "pct": 34.3, "gini": 0.4506, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 148, "regra": "Folha", "n": 318, "n_pos": 138, "n_neg": 180, "pct": 43.4, "gini": 0.4913, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 149, "regra": "Folha", "n": 245, "n_pos": 55, "n_neg": 190, "pct": 22.4, "gini": 0.3482, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 150, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 6830, "n_pos": 3639, "n_neg": 3191, "pct": 53.3, "gini": 0.4978, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 151, "regra": "Percent_Days_Employed ≤ 0.93", "n": 1402, "n_pos": 501, "n_neg": 901, "pct": 35.7, "gini": 0.4593, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 152, "regra": "Prior_Arrest_Episodes_Felony ≤ 1.5", "n": 563, "n_pos": 263, "n_neg": 300, "pct": 46.7, "gini": 0.4978, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 153, "regra": "Avg_Days_per_DrugTest ≤ 40.599", "n": 282, "n_pos": 108, "n_neg": 174, "pct": 38.3, "gini": 0.4726, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 154, "regra": "Jobs_Per_Year ≤ 1.811", "n": 110, "n_pos": 54, "n_neg": 56, "pct": 49.1, "gini": 0.4998, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 155, "regra": "Folha", "n": 83, "n_pos": 33, "n_neg": 50, "pct": 39.8, "gini": 0.479, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 156, "regra": "Folha", "n": 27, "n_pos": 21, "n_neg": 6, "pct": 77.8, "gini": 0.3457, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 157, "regra": "Percent_Days_Employed ≤ 0.616", "n": 172, "n_pos": 54, "n_neg": 118, "pct": 31.4, "gini": 0.4308, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 158, "regra": "Folha", "n": 35, "n_pos": 20, "n_neg": 15, "pct": 57.1, "gini": 0.4898, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 159, "regra": "Folha", "n": 137, "n_pos": 34, "n_neg": 103, "pct": 24.8, "gini": 0.3732, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 160, "regra": "Age_at_Release ≤ 3.5", "n": 281, "n_pos": 155, "n_neg": 126, "pct": 55.2, "gini": 0.4947, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 161, "regra": "Percent_Days_Employed ≤ 0.693", "n": 229, "n_pos": 139, "n_neg": 90, "pct": 60.7, "gini": 0.4771, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 162, "regra": "Folha", "n": 90, "n_pos": 63, "n_neg": 27, "pct": 70.0, "gini": 0.42, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 163, "regra": "Folha", "n": 139, "n_pos": 76, "n_neg": 63, "pct": 54.7, "gini": 0.4956, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 164, "regra": "Percent_Days_Employed ≤ 0.915", "n": 52, "n_pos": 16, "n_neg": 36, "pct": 30.8, "gini": 0.426, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 165, "regra": "Folha", "n": 48, "n_pos": 12, "n_neg": 36, "pct": 25.0, "gini": 0.375, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 166, "regra": "Folha", "n": 4, "n_pos": 4, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 167, "regra": "Age_at_Release ≤ 2.5", "n": 839, "n_pos": 238, "n_neg": 601, "pct": 28.4, "gini": 0.4064, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 168, "regra": "Jobs_Per_Year ≤ 0.962", "n": 502, "n_pos": 177, "n_neg": 325, "pct": 35.3, "gini": 0.4565, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 169, "regra": "Avg_Days_per_DrugTest ≤ 10.265", "n": 85, "n_pos": 16, "n_neg": 69, "pct": 18.8, "gini": 0.3056, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 170, "regra": "Folha", "n": 2, "n_pos": 2, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 171, "regra": "Folha", "n": 83, "n_pos": 14, "n_neg": 69, "pct": 16.9, "gini": 0.2804, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 172, "regra": "Jobs_Per_Year ≤ 1.029", "n": 417, "n_pos": 161, "n_neg": 256, "pct": 38.6, "gini": 0.474, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 173, "regra": "Folha", "n": 72, "n_pos": 41, "n_neg": 31, "pct": 56.9, "gini": 0.4904, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 174, "regra": "Folha", "n": 345, "n_pos": 120, "n_neg": 225, "pct": 34.8, "gini": 0.4537, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 175, "regra": "Avg_Days_per_DrugTest ≤ 7.927", "n": 337, "n_pos": 61, "n_neg": 276, "pct": 18.1, "gini": 0.2965, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 176, "regra": "Jobs_Per_Year ≤ 2.173", "n": 6, "n_pos": 4, "n_neg": 2, "pct": 66.7, "gini": 0.4444, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 177, "regra": "Folha", "n": 4, "n_pos": 4, "n_neg": 0, "pct": 100.0, "gini": 0.0, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 178, "regra": "Folha", "n": 2, "n_pos": 0, "n_neg": 2, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 179, "regra": "Percent_Days_Employed ≤ 0.98", "n": 331, "n_pos": 57, "n_neg": 274, "pct": 17.2, "gini": 0.2851, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 180, "regra": "Folha", "n": 48, "n_pos": 13, "n_neg": 35, "pct": 27.1, "gini": 0.395, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 181, "regra": "Folha", "n": 283, "n_pos": 44, "n_neg": 239, "pct": 15.5, "gini": 0.2626, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 182, "regra": "Percent_Days_Employed ≤ 0.906", "n": 5428, "n_pos": 3138, "n_neg": 2290, "pct": 57.8, "gini": 0.4878, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 183, "regra": "Prior_Arrest_Episodes_Felony ≤ 9.5", "n": 1830, "n_pos": 1229, "n_neg": 601, "pct": 67.2, "gini": 0.4411, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 184, "regra": "Age_at_Release ≤ 1.5", "n": 1328, "n_pos": 849, "n_neg": 479, "pct": 63.9, "gini": 0.4612, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 185, "regra": "Percent_Days_Employed ≤ 0.618", "n": 477, "n_pos": 357, "n_neg": 120, "pct": 74.8, "gini": 0.3766, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 186, "regra": "Folha", "n": 156, "n_pos": 128, "n_neg": 28, "pct": 82.1, "gini": 0.2945, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 187, "regra": "Folha", "n": 321, "n_pos": 229, "n_neg": 92, "pct": 71.3, "gini": 0.4089, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 188, "regra": "Age_at_Release ≤ 4.5", "n": 851, "n_pos": 492, "n_neg": 359, "pct": 57.8, "gini": 0.4878, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 189, "regra": "Folha", "n": 695, "n_pos": 425, "n_neg": 270, "pct": 61.2, "gini": 0.4751, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 190, "regra": "Folha", "n": 156, "n_pos": 67, "n_neg": 89, "pct": 42.9, "gini": 0.4901, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 191, "regra": "Percent_Days_Employed ≤ 0.711", "n": 502, "n_pos": 380, "n_neg": 122, "pct": 75.7, "gini": 0.3679, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 192, "regra": "Jobs_Per_Year ≤ 0.718", "n": 195, "n_pos": 160, "n_neg": 35, "pct": 82.1, "gini": 0.2945, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 193, "regra": "Folha", "n": 9, "n_pos": 4, "n_neg": 5, "pct": 44.4, "gini": 0.4938, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 194, "regra": "Folha", "n": 186, "n_pos": 156, "n_neg": 30, "pct": 83.9, "gini": 0.2706, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 195, "regra": "Percent_Days_Employed ≤ 0.713", "n": 307, "n_pos": 220, "n_neg": 87, "pct": 71.7, "gini": 0.4062, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 196, "regra": "Folha", "n": 4, "n_pos": 0, "n_neg": 4, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 197, "regra": "Folha", "n": 303, "n_pos": 220, "n_neg": 83, "pct": 72.6, "gini": 0.3978, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 198, "regra": "Jobs_Per_Year ≤ 0.921", "n": 3598, "n_pos": 1909, "n_neg": 1689, "pct": 53.1, "gini": 0.4981, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 199, "regra": "Age_at_Release ≤ 1.5", "n": 525, "n_pos": 181, "n_neg": 344, "pct": 34.5, "gini": 0.4518, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 200, "regra": "Percent_Days_Employed ≤ 0.929", "n": 93, "n_pos": 44, "n_neg": 49, "pct": 47.3, "gini": 0.4986, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 201, "regra": "Folha", "n": 9, "n_pos": 1, "n_neg": 8, "pct": 11.1, "gini": 0.1975, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 202, "regra": "Folha", "n": 84, "n_pos": 43, "n_neg": 41, "pct": 51.2, "gini": 0.4997, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 203, "regra": "Percent_Days_Employed ≤ 0.963", "n": 432, "n_pos": 137, "n_neg": 295, "pct": 31.7, "gini": 0.4331, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 204, "regra": "Folha", "n": 88, "n_pos": 39, "n_neg": 49, "pct": 44.3, "gini": 0.4935, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 205, "regra": "Folha", "n": 344, "n_pos": 98, "n_neg": 246, "pct": 28.5, "gini": 0.4074, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 206, "regra": "Prior_Arrest_Episodes_Felony ≤ 7.5", "n": 3073, "n_pos": 1728, "n_neg": 1345, "pct": 56.2, "gini": 0.4922, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 207, "regra": "Age_at_Release ≤ 1.5", "n": 1787, "n_pos": 901, "n_neg": 886, "pct": 50.4, "gini": 0.5, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 208, "regra": "Folha", "n": 585, "n_pos": 368, "n_neg": 217, "pct": 62.9, "gini": 0.4667, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 209, "regra": "Folha", "n": 1202, "n_pos": 533, "n_neg": 669, "pct": 44.3, "gini": 0.4936, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 210, "regra": "Age_at_Release ≤ 4.5", "n": 1286, "n_pos": 827, "n_neg": 459, "pct": 64.3, "gini": 0.4591, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 211, "regra": "Folha", "n": 768, "n_pos": 543, "n_neg": 225, "pct": 70.7, "gini": 0.4143, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 212, "regra": "Folha", "n": 518, "n_pos": 284, "n_neg": 234, "pct": 54.8, "gini": 0.4953, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}], "lado": "nao"}]};
-const NODE_W=210, NODE_H=95, H_GAP=28, V_GAP=55;
- 
+const DATA={"id": 0, "regra": "Percent_Days_Employed ≤ 0.476", "n": 18084, "n_pos": 10433, "n_neg": 7651, "pct": 57.7, "gini": 0.4882, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 1, "regra": "Age_at_Release ≤ 5.5", "n": 8849, "n_pos": 6260, "n_neg": 2589, "pct": 70.7, "gini": 0.414, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 2, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 7594, "n_pos": 5622, "n_neg": 1972, "pct": 74.0, "gini": 0.3845, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 3, "regra": "Folha", "n": 1382, "n_pos": 814, "n_neg": 568, "pct": 58.9, "gini": 0.4842, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 4, "regra": "Folha", "n": 6212, "n_pos": 4808, "n_neg": 1404, "pct": 77.4, "gini": 0.3499, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 5, "regra": "Prior_Arrest_Episodes_Felony ≤ 4.5", "n": 1255, "n_pos": 638, "n_neg": 617, "pct": 50.8, "gini": 0.4999, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 6, "regra": "Folha", "n": 317, "n_pos": 85, "n_neg": 232, "pct": 26.8, "gini": 0.3925, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 7, "regra": "Folha", "n": 938, "n_pos": 553, "n_neg": 385, "pct": 59.0, "gini": 0.484, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 8, "regra": "Jobs_Per_Year ≤ 0.66", "n": 9235, "n_pos": 4173, "n_neg": 5062, "pct": 45.2, "gini": 0.4954, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 9, "regra": "Percent_Days_Employed ≤ 0.478", "n": 2405, "n_pos": 534, "n_neg": 1871, "pct": 22.2, "gini": 0.3455, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 10, "regra": "Folha", "n": 332, "n_pos": 0, "n_neg": 332, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 11, "regra": "Folha", "n": 2073, "n_pos": 534, "n_neg": 1539, "pct": 25.8, "gini": 0.3825, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 12, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 6830, "n_pos": 3639, "n_neg": 3191, "pct": 53.3, "gini": 0.4978, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 13, "regra": "Folha", "n": 1402, "n_pos": 501, "n_neg": 901, "pct": 35.7, "gini": 0.4593, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 14, "regra": "Folha", "n": 5428, "n_pos": 3138, "n_neg": 2290, "pct": 57.8, "gini": 0.4878, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}]};
+const NODE_W=220,NODE_H=92,H_GAP=24,V_GAP=50;
+
 function giniCor(g){
-  const t=Math.min(g/0.5,1);
-  return `rgb(${Math.round(8+(198-8)*t)},${Math.round(48+(219-48)*t)},${Math.round(107+(239-107)*t)})`;
+  var t=Math.min(g/0.5,1);
+  var v=Math.round(68+(221-68)*t);
+  return 'rgb('+v+','+v+','+v+')';
 }
-function darken(g){
-  const t=Math.min(g/0.5,1);
-  return `rgb(${Math.max(0,Math.round(8+(198-8)*t)-30)},${Math.max(0,Math.round(48+(219-48)*t)-30)},${Math.max(0,Math.round(107+(239-107)*t)-30)})`;
+function headerCor(g){
+  var t=Math.min(g/0.5,1);
+  var v=Math.max(0,Math.round(68+(221-68)*t)-25);
+  return 'rgb('+v+','+v+','+v+')';
 }
-function textCor(g){ return g<0.32?'white':'#111'; }
- 
-const collapsed=new Set();
- 
+function textCor(g){return g<0.35?'white':'#111';}
+
+var collapsed=new Set();
+
 function cloneTree(d){
-  const n={...d};
+  var n=Object.assign({},d);
   if(d.children&&!collapsed.has(d.id)){
     n.children=d.children.map(cloneTree);
   }else{
@@ -67,100 +79,121 @@ function cloneTree(d){
   }
   return n;
 }
- 
-const svg=d3.select('#svg-container').append('svg');
-const g=svg.append('g');
-const zoom=d3.zoom().scaleExtent([0.08,3]).on('zoom',e=>g.attr('transform',e.transform));
-svg.call(zoom);
-function resetZoom(){svg.transition().duration(400).call(zoom.transform,d3.zoomIdentity.translate(60,40));}
- 
+
+var container=document.getElementById('tree-container');
+var svg=d3.select('#tree-container').append('svg');
+var gEl=svg.append('g');
+var zoomBehavior=d3.zoom().scaleExtent([0.05,4]).on('zoom',function(e){gEl.attr('transform',e.transform);});
+svg.call(zoomBehavior);
+
+function resetZoom(){svg.transition().duration(400).call(zoomBehavior.transform,d3.zoomIdentity.translate(60,40).scale(0.8));}
+
+function fitToScreen(){
+  var bounds=gEl.node().getBBox();
+  if(!bounds.width)return;
+  var cw=container.clientWidth,ch=container.clientHeight;
+  var scale=Math.min(cw/(bounds.width+80),ch/(bounds.height+80),1.5);
+  var tx=cw/2-(bounds.x+bounds.width/2)*scale;
+  var ty=ch/2-(bounds.y+bounds.height/2)*scale;
+  svg.transition().duration(500).call(zoomBehavior.transform,
+    d3.zoomIdentity.translate(tx,ty).scale(scale));
+}
+
 function render(){
-  g.selectAll('*').remove();
-  const root=d3.hierarchy(cloneTree(DATA),d=>d.children);
-  d3.tree().nodeSize([NODE_W+H_GAP, NODE_H+V_GAP])(root);
- 
-  const descs=root.descendants();
-  const xs=descs.map(d=>d.x), ys=descs.map(d=>d.y);
-  const minX=Math.min(...xs)-NODE_W/2-30, maxX=Math.max(...xs)+NODE_W/2+30;
-  const minY=Math.min(...ys)-30, maxY=Math.max(...ys)+NODE_H+30;
-  svg.attr('width',maxX-minX+20).attr('height',maxY-minY+20);
-  const ox=-minX+10, oy=-minY+10;
- 
-  g.selectAll('.link').data(root.links()).join('path').attr('class','link')
-    .attr('d',d=>{
-      const sx=d.source.x+ox, sy=d.source.y+NODE_H+oy;
-      const tx=d.target.x+ox, ty=d.target.y+oy;
-      const my=(sy+ty)/2;
-      return `M${sx},${sy} C${sx},${my} ${tx},${my} ${tx},${ty}`;
+  gEl.selectAll('*').remove();
+  var root=d3.hierarchy(cloneTree(DATA),function(d){return d.children;});
+  d3.tree().nodeSize([NODE_W+H_GAP,NODE_H+V_GAP])(root);
+
+  var descs=root.descendants();
+  var xs=descs.map(function(d){return d.x;}),ys=descs.map(function(d){return d.y;});
+  var minX=Math.min.apply(null,xs)-NODE_W/2-30,maxX=Math.max.apply(null,xs)+NODE_W/2+30;
+  var minY=Math.min.apply(null,ys)-30,maxY=Math.max.apply(null,ys)+NODE_H+30;
+  var ox=-minX+10,oy=-minY+10;
+
+  gEl.selectAll('.link').data(root.links()).join('path').attr('class','link')
+    .attr('d',function(d){
+      var sx=d.source.x+ox,sy=d.source.y+NODE_H+oy;
+      var tx=d.target.x+ox,ty=d.target.y+oy;
+      var my=(sy+ty)/2;
+      return 'M'+sx+','+sy+' C'+sx+','+my+' '+tx+','+my+' '+tx+','+ty;
     });
- 
-  g.selectAll('.link-label').data(root.links()).join('text').attr('class','link-label')
-    .attr('x',d=>(d.source.x+d.target.x)/2+ox+(d.target.data.lado==='sim'?-18:18))
-    .attr('y',d=>(d.source.y+NODE_H+d.target.y)/2+oy)
+
+  gEl.selectAll('.link-label').data(root.links()).join('text').attr('class','link-label')
+    .attr('x',function(d){return(d.source.x+d.target.x)/2+ox+(d.target.data.lado==='sim'?-16:16);})
+    .attr('y',function(d){return(d.source.y+NODE_H+d.target.y)/2+oy;})
     .attr('text-anchor','middle')
-    .attr('fill',d=>d.target.data.lado==='sim'?'#276749':'#c53030')
-    .text(d=>d.target.data.lado==='sim'?'Sim':'Não');
- 
-  const nodes=g.selectAll('.node').data(descs).join('g')
-    .attr('class',d=>'node'+(d.data.folha?' node-folha':''))
-    .attr('transform',d=>`translate(${d.x+ox-NODE_W/2},${d.y+oy})`);
- 
+    .attr('fill',function(d){return d.target.data.lado==='sim'?'#555':'#888';})
+    .text(function(d){return d.target.data.lado==='sim'?'Sim':'N\u00e3o';});
+
+  var nodes=gEl.selectAll('.node').data(descs).join('g')
+    .attr('class',function(d){
+      var c='node';
+      if(d.data.folha)c+=' node-folha';
+      if(!d.data.folha&&collapsed.has(d.data.id))c+=' node-collapsed';
+      return c;
+    })
+    .attr('transform',function(d){return 'translate('+(d.x+ox-NODE_W/2)+','+(d.y+oy)+')';});
+
   nodes.append('rect')
-    .attr('width',NODE_W).attr('height',NODE_H).attr('rx',8).attr('ry',8)
-    .attr('fill',d=>giniCor(d.data.gini))
-    .on('click',(ev,d)=>{
+    .attr('width',NODE_W).attr('height',NODE_H).attr('rx',6).attr('ry',6)
+    .attr('fill',function(d){return giniCor(d.data.gini);})
+    .attr('stroke','#777').attr('stroke-width',1.5)
+    .on('click',function(ev,d){
+      ev.stopPropagation();
       if(d.data.folha)return;
-      collapsed.has(d.data.id)?collapsed.delete(d.data.id):collapsed.add(d.data.id);
+      if(collapsed.has(d.data.id)){collapsed.delete(d.data.id);}else{collapsed.add(d.data.id);}
       render();
     });
- 
-  nodes.filter(d=>!d.data.folha).append('rect')
-    .attr('width',NODE_W).attr('height',26).attr('rx',8).attr('ry',8)
-    .attr('fill',d=>darken(d.data.gini)).style('pointer-events','none');
- 
+
+  nodes.filter(function(d){return !d.data.folha;}).append('rect')
+    .attr('width',NODE_W).attr('height',24).attr('rx',6).attr('ry',6)
+    .attr('fill',function(d){return headerCor(d.data.gini);}).style('pointer-events','none');
+
   nodes.append('line')
-    .attr('x1',0).attr('x2',NODE_W).attr('y1',26).attr('y2',26)
-    .attr('stroke','rgba(255,255,255,0.25)').attr('stroke-width',1)
+    .attr('x1',0).attr('x2',NODE_W).attr('y1',24).attr('y2',24)
+    .attr('stroke','rgba(0,0,0,0.1)').attr('stroke-width',1)
     .style('pointer-events','none');
- 
+
   nodes.append('text')
-    .attr('x',NODE_W/2).attr('y',17).attr('text-anchor','middle')
-    .attr('font-size',11).attr('font-weight','bold')
-    .attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
-    .text(d=>d.data.regra.length>30?d.data.regra.slice(0,29)+'…':d.data.regra)
-    .append('title').text(d=>d.data.regra);
- 
+    .attr('x',NODE_W/2).attr('y',16).attr('text-anchor','middle')
+    .attr('font-size',10).attr('font-weight','bold')
+    .attr('fill',function(d){return textCor(d.data.gini);})
+    .text(function(d){return d.data.regra.length>28?d.data.regra.slice(0,27)+'\u2026':d.data.regra;})
+    .append('title').text(function(d){return d.data.regra;});
+
   nodes.append('text')
-    .attr('x',NODE_W/2).attr('y',48).attr('text-anchor','middle')
-    .attr('font-size',14).attr('font-weight','bold')
-    .attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
-    .text(d=>`% Reincidência: ${d.data.pct}%`);
- 
+    .attr('x',NODE_W/2).attr('y',44).attr('text-anchor','middle')
+    .attr('font-size',13).attr('font-weight','bold')
+    .attr('fill',function(d){return textCor(d.data.gini);})
+    .text(function(d){return '% Reincid\u00eancia: '+d.data.pct+'%';});
+
   nodes.append('text')
-    .attr('x',NODE_W/2).attr('y',65).attr('text-anchor','middle')
-    .attr('font-size',10).attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
-    .text(d=>`n = ${d.data.n.toLocaleString('pt-BR')}   Gini = ${d.data.gini}`);
- 
-  nodes.filter(d=>d.data.folha).append('text')
-    .attr('x',NODE_W/2).attr('y',82).attr('text-anchor','middle')
-    .attr('font-size',11).attr('font-weight','bold')
-    .attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
-    .text(d=>'→ '+d.data.pred);
- 
-  nodes.filter(d=>!d.data.folha).append('text')
-    .attr('x',NODE_W/2).attr('y',82).attr('text-anchor','middle')
-    .attr('font-size',10).attr('fill',d=>textCor(d.data.gini)).style('pointer-events','none')
-    .text(d=>collapsed.has(d.data.id)?'▼ expandir (clique)':'▲ colapsar (clique)');
+    .attr('x',NODE_W/2).attr('y',60).attr('text-anchor','middle')
+    .attr('font-size',9).attr('fill',function(d){return textCor(d.data.gini);})
+    .text(function(d){return 'n = '+d.data.n.toLocaleString('pt-BR')+'   Gini = '+d.data.gini;});
+
+  nodes.filter(function(d){return d.data.folha;}).append('text')
+    .attr('x',NODE_W/2).attr('y',78).attr('text-anchor','middle')
+    .attr('font-size',10).attr('font-weight','bold')
+    .attr('fill',function(d){return textCor(d.data.gini);})
+    .text(function(d){return '\u2192 '+d.data.pred;});
+
+  nodes.filter(function(d){return !d.data.folha;}).append('text')
+    .attr('x',NODE_W/2).attr('y',78).attr('text-anchor','middle')
+    .attr('font-size',9).attr('fill',function(d){return textCor(d.data.gini);})
+    .text(function(d){return collapsed.has(d.data.id)?'\u25b6 clique para expandir':'\u25c0 clique para colapsar';});
 }
- 
-function expandAll(){collapsed.clear();render();}
+
+function expandAll(){collapsed.clear();render();setTimeout(fitToScreen,100);}
 function collapseAll(){
   function col(d){if(d.children){collapsed.add(d.id);d.children.forEach(col);}}
   if(DATA.children)DATA.children.forEach(col);
-  render();
+  render();setTimeout(fitToScreen,100);
 }
+
 render();
-resetZoom();
+setTimeout(fitToScreen,200);
+window.addEventListener('resize',function(){setTimeout(fitToScreen,100);});
 </script>
 </body>
 </html>
