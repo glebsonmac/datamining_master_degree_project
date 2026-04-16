@@ -35,6 +35,7 @@ svg:active{cursor:grabbing;}
 <body>
 <div class="app">
 <div id="header"><span>Árvore Podada — Variáveis Selecionadas (max_depth=3)</span><span style="font-size:11px;font-weight:normal;color:#ccc;">Escala de cinza | Clique nos nós para expandir/colapsar</span></div>
+<div id="nom-legend" style="background:#fff8e1;padding:6px 20px;font-size:11px;border-bottom:1px solid #ddd;max-height:120px;overflow-y:auto;"><b>Mapeamento das variáveis categóricas (Label Encoding):</b><table style="border-collapse:collapse;margin-top:4px"><tr><td style="padding:2px 8px;font-weight:bold;white-space:nowrap">Age_at_Release</td><td style="padding:2px 8px;color:#555">0=18-22 | 1=23-27 | 2=28-32 | 3=33-37 | 4=38-42 | 5=43-47 | 6=48 or older</td></tr></table></div>
 <div id="legend">
   <div class="leg-item"><div class="leg-box" style="background:#444"></div>Gini&asymp;0 (puro)</div>
   <div class="leg-item"><div class="leg-box" style="background:#999"></div>Gini&asymp;0.25</div>
@@ -53,8 +54,8 @@ svg:active{cursor:grabbing;}
 </div>
 <script>
 const DATA={"id": 0, "regra": "Percent_Days_Employed ≤ 0.476", "n": 18084, "n_pos": 10433, "n_neg": 7651, "pct": 57.7, "gini": 0.4882, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 1, "regra": "Age_at_Release ≤ 5.5", "n": 8849, "n_pos": 6260, "n_neg": 2589, "pct": 70.7, "gini": 0.414, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 2, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 7594, "n_pos": 5622, "n_neg": 1972, "pct": 74.0, "gini": 0.3845, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 3, "regra": "Folha", "n": 1382, "n_pos": 814, "n_neg": 568, "pct": 58.9, "gini": 0.4842, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 4, "regra": "Folha", "n": 6212, "n_pos": 4808, "n_neg": 1404, "pct": 77.4, "gini": 0.3499, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 5, "regra": "Prior_Arrest_Episodes_Felony ≤ 4.5", "n": 1255, "n_pos": 638, "n_neg": 617, "pct": 50.8, "gini": 0.4999, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 6, "regra": "Folha", "n": 317, "n_pos": 85, "n_neg": 232, "pct": 26.8, "gini": 0.3925, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 7, "regra": "Folha", "n": 938, "n_pos": 553, "n_neg": 385, "pct": 59.0, "gini": 0.484, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "sim"}, {"id": 8, "regra": "Jobs_Per_Year ≤ 0.66", "n": 9235, "n_pos": 4173, "n_neg": 5062, "pct": 45.2, "gini": 0.4954, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 9, "regra": "Percent_Days_Employed ≤ 0.478", "n": 2405, "n_pos": 534, "n_neg": 1871, "pct": 22.2, "gini": 0.3455, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 10, "regra": "Folha", "n": 332, "n_pos": 0, "n_neg": 332, "pct": 0.0, "gini": 0.0, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 11, "regra": "Folha", "n": 2073, "n_pos": 534, "n_neg": 1539, "pct": 25.8, "gini": 0.3825, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "sim"}, {"id": 12, "regra": "Prior_Arrest_Episodes_Felony ≤ 2.5", "n": 6830, "n_pos": 3639, "n_neg": 3191, "pct": 53.3, "gini": 0.4978, "folha": false, "pred": null, "classe_alvo": "Reincidência", "children": [{"id": 13, "regra": "Folha", "n": 1402, "n_pos": 501, "n_neg": 901, "pct": 35.7, "gini": 0.4593, "folha": true, "pred": "Não reincidiu", "classe_alvo": "Reincidência", "lado": "sim"}, {"id": 14, "regra": "Folha", "n": 5428, "n_pos": 3138, "n_neg": 2290, "pct": 57.8, "gini": 0.4878, "folha": true, "pred": "Reincidiu", "classe_alvo": "Reincidência", "lado": "nao"}], "lado": "nao"}], "lado": "nao"}]};
-const NODE_W=220,NODE_H=92,H_GAP=24,V_GAP=50;
-
+const NODE_W=260,NODE_H=95,H_GAP=28,V_GAP=55;
+ 
 function giniCor(g){
   var t=Math.min(g/0.5,1);
   var v=Math.round(68+(221-68)*t);
@@ -66,9 +67,9 @@ function headerCor(g){
   return 'rgb('+v+','+v+','+v+')';
 }
 function textCor(g){return g<0.35?'white':'#111';}
-
+ 
 var collapsed=new Set();
-
+ 
 function cloneTree(d){
   var n=Object.assign({},d);
   if(d.children&&!collapsed.has(d.id)){
@@ -79,15 +80,15 @@ function cloneTree(d){
   }
   return n;
 }
-
+ 
 var container=document.getElementById('tree-container');
 var svg=d3.select('#tree-container').append('svg');
 var gEl=svg.append('g');
 var zoomBehavior=d3.zoom().scaleExtent([0.05,4]).on('zoom',function(e){gEl.attr('transform',e.transform);});
 svg.call(zoomBehavior);
-
+ 
 function resetZoom(){svg.transition().duration(400).call(zoomBehavior.transform,d3.zoomIdentity.translate(60,40).scale(0.8));}
-
+ 
 function fitToScreen(){
   var bounds=gEl.node().getBBox();
   if(!bounds.width)return;
@@ -98,18 +99,18 @@ function fitToScreen(){
   svg.transition().duration(500).call(zoomBehavior.transform,
     d3.zoomIdentity.translate(tx,ty).scale(scale));
 }
-
+ 
 function render(){
   gEl.selectAll('*').remove();
   var root=d3.hierarchy(cloneTree(DATA),function(d){return d.children;});
   d3.tree().nodeSize([NODE_W+H_GAP,NODE_H+V_GAP])(root);
-
+ 
   var descs=root.descendants();
   var xs=descs.map(function(d){return d.x;}),ys=descs.map(function(d){return d.y;});
   var minX=Math.min.apply(null,xs)-NODE_W/2-30,maxX=Math.max.apply(null,xs)+NODE_W/2+30;
   var minY=Math.min.apply(null,ys)-30,maxY=Math.max.apply(null,ys)+NODE_H+30;
   var ox=-minX+10,oy=-minY+10;
-
+ 
   gEl.selectAll('.link').data(root.links()).join('path').attr('class','link')
     .attr('d',function(d){
       var sx=d.source.x+ox,sy=d.source.y+NODE_H+oy;
@@ -117,14 +118,14 @@ function render(){
       var my=(sy+ty)/2;
       return 'M'+sx+','+sy+' C'+sx+','+my+' '+tx+','+my+' '+tx+','+ty;
     });
-
+ 
   gEl.selectAll('.link-label').data(root.links()).join('text').attr('class','link-label')
     .attr('x',function(d){return(d.source.x+d.target.x)/2+ox+(d.target.data.lado==='sim'?-16:16);})
     .attr('y',function(d){return(d.source.y+NODE_H+d.target.y)/2+oy;})
     .attr('text-anchor','middle')
     .attr('fill',function(d){return d.target.data.lado==='sim'?'#555':'#888';})
     .text(function(d){return d.target.data.lado==='sim'?'Sim':'N\u00e3o';});
-
+ 
   var nodes=gEl.selectAll('.node').data(descs).join('g')
     .attr('class',function(d){
       var c='node';
@@ -133,7 +134,7 @@ function render(){
       return c;
     })
     .attr('transform',function(d){return 'translate('+(d.x+ox-NODE_W/2)+','+(d.y+oy)+')';});
-
+ 
   nodes.append('rect')
     .attr('width',NODE_W).attr('height',NODE_H).attr('rx',6).attr('ry',6)
     .attr('fill',function(d){return giniCor(d.data.gini);})
@@ -144,53 +145,53 @@ function render(){
       if(collapsed.has(d.data.id)){collapsed.delete(d.data.id);}else{collapsed.add(d.data.id);}
       render();
     });
-
+ 
   nodes.filter(function(d){return !d.data.folha;}).append('rect')
     .attr('width',NODE_W).attr('height',24).attr('rx',6).attr('ry',6)
     .attr('fill',function(d){return headerCor(d.data.gini);}).style('pointer-events','none');
-
+ 
   nodes.append('line')
     .attr('x1',0).attr('x2',NODE_W).attr('y1',24).attr('y2',24)
     .attr('stroke','rgba(0,0,0,0.1)').attr('stroke-width',1)
     .style('pointer-events','none');
-
+ 
   nodes.append('text')
     .attr('x',NODE_W/2).attr('y',16).attr('text-anchor','middle')
     .attr('font-size',10).attr('font-weight','bold')
     .attr('fill',function(d){return textCor(d.data.gini);})
-    .text(function(d){return d.data.regra.length>28?d.data.regra.slice(0,27)+'\u2026':d.data.regra;})
+    .text(function(d){return d.data.regra.length>34?d.data.regra.slice(0,33)+'\u2026':d.data.regra;})
     .append('title').text(function(d){return d.data.regra;});
-
+ 
   nodes.append('text')
     .attr('x',NODE_W/2).attr('y',44).attr('text-anchor','middle')
     .attr('font-size',13).attr('font-weight','bold')
     .attr('fill',function(d){return textCor(d.data.gini);})
     .text(function(d){return '% Reincid\u00eancia: '+d.data.pct+'%';});
-
+ 
   nodes.append('text')
     .attr('x',NODE_W/2).attr('y',60).attr('text-anchor','middle')
     .attr('font-size',9).attr('fill',function(d){return textCor(d.data.gini);})
     .text(function(d){return 'n = '+d.data.n.toLocaleString('pt-BR')+'   Gini = '+d.data.gini;});
-
+ 
   nodes.filter(function(d){return d.data.folha;}).append('text')
     .attr('x',NODE_W/2).attr('y',78).attr('text-anchor','middle')
     .attr('font-size',10).attr('font-weight','bold')
     .attr('fill',function(d){return textCor(d.data.gini);})
     .text(function(d){return '\u2192 '+d.data.pred;});
-
+ 
   nodes.filter(function(d){return !d.data.folha;}).append('text')
     .attr('x',NODE_W/2).attr('y',78).attr('text-anchor','middle')
     .attr('font-size',9).attr('fill',function(d){return textCor(d.data.gini);})
     .text(function(d){return collapsed.has(d.data.id)?'\u25b6 clique para expandir':'\u25c0 clique para colapsar';});
 }
-
+ 
 function expandAll(){collapsed.clear();render();setTimeout(fitToScreen,100);}
 function collapseAll(){
   function col(d){if(d.children){collapsed.add(d.id);d.children.forEach(col);}}
   if(DATA.children)DATA.children.forEach(col);
   render();setTimeout(fitToScreen,100);
 }
-
+ 
 render();
 setTimeout(fitToScreen,200);
 window.addEventListener('resize',function(){setTimeout(fitToScreen,100);});
